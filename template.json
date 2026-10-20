@@ -1,0 +1,146 @@
+{
+  "name": "OpenViking v0.5 Context Database for AI Agents",
+  "description": "One self-hosted store for agent memory, knowledge and skills, with an API.",
+  "category": "AI/ML",
+  "tags": [
+    "openviking",
+    "context-database",
+    "memory",
+    "rag",
+    "ai-agents",
+    "mcp",
+    "skills",
+    "vector-search"
+  ],
+  "image": "https://cdn.jsdelivr.net/gh/volcengine/OpenViking@v0.5.1/docs/images/ov-logo-square.png",
+  "upstream": {
+    "repo": "volcengine/OpenViking",
+    "version": "v0.5.1 (image ghcr.io/volcengine/openviking:v0.5.1, revision e855796c, released 2026-10-19)",
+    "checked": "2026-10-20"
+  },
+  "services": {
+    "OpenViking": {
+      "icon": "https://cdn.jsdelivr.net/gh/volcengine/OpenViking@v0.5.1/docs/images/ov-logo-square.png",
+      "source": {
+        "image": "ghcr.io/volcengine/openviking:v0.5.1"
+      },
+      "startCommand": "/bin/sh -c 'set -eu; conf=\"${OPENVIKING_CONFIG_FILE:-/app/.openviking/ov.conf}\"; mode=\"${OPENVIKING_CONF_MODE:-seed}\"; mkdir -p \"$(dirname \"$conf\")\"; case \"$mode\" in seed) if [ -s \"$conf\" ]; then write=0; else write=1; fi;; overwrite) write=1; if [ -s \"$conf\" ]; then cp -p \"$conf\" \"$conf.previous\"; fi;; *) echo \"[railway] OPENVIKING_CONF_MODE must be seed or overwrite, got: $mode\" >&2; exit 2;; esac; if [ \"$write\" = 1 ]; then if [ -z \"${OPENVIKING_CONF_CONTENT:-}\" ]; then echo \"[railway] OPENVIKING_CONF_CONTENT is empty, cannot create $conf\" >&2; exit 2; fi; (umask 077; printf \"%s\\n\" \"$OPENVIKING_CONF_CONTENT\" > \"$conf.tmp\"); mv -f \"$conf.tmp\" \"$conf\"; echo \"[railway] wrote $conf from OPENVIKING_CONF_CONTENT ($mode mode)\"; else echo \"[railway] keeping existing $conf (seed mode: OPENVIKING_CONF_CONTENT only seeds a new volume)\"; fi; set -- --host 0.0.0.0 --port \"${PORT:-1933}\"; case \"${OPENVIKING_WITH_BOT:-1}\" in 1|true|TRUE|yes|on) set -- \"$@\" --with-bot --disable-bot-logging;; 0|false|FALSE|no|off) ;; *) echo \"[railway] OPENVIKING_WITH_BOT must be 1 or 0\" >&2; exit 2;; esac; echo \"[railway] starting openviking-server $*\"; exec openviking-server \"$@\"'",
+      "preDeployCommand": null,
+      "healthcheckPath": "/ready",
+      "healthcheckTimeout": 600,
+      "restartPolicyType": "ALWAYS",
+      "restartPolicyMaxRetries": null,
+      "numReplicas": 1,
+      "cronSchedule": null,
+      "publicDomain": true,
+      "targetPort": 1933,
+      "tcpProxy": null,
+      "volume": {
+        "mountPath": "/app/.openviking"
+      },
+      "variables": {
+        "PORT": {
+          "defaultValue": "1933",
+          "description": "Port the server listens on; Railway routes the domain and the healthcheck here.",
+          "required": false
+        },
+        "OPENVIKING_ROOT_API_KEY": {
+          "defaultValue": "${{secret(48, \"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\")}}",
+          "description": "Root (admin) key, generated at deploy. Creates accounts and user keys; it cannot read tenant data.",
+          "required": false
+        },
+        "OPENAI_API_KEY": {
+          "defaultValue": "",
+          "description": "REQUIRED. API key for an OpenAI-compatible endpoint, used for embeddings and the LLM by default.",
+          "required": true
+        },
+        "OPENAI_API_BASE": {
+          "defaultValue": "https://api.openai.com/v1",
+          "description": "OpenAI-compatible base URL shared by embeddings and LLM (e.g. https://openrouter.ai/api/v1).",
+          "required": false
+        },
+        "OV_VLM_PROVIDER": {
+          "defaultValue": "openai",
+          "description": "LLM provider for summaries and memory extraction: openai, volcengine, litellm, kimi, glm, ...",
+          "required": false
+        },
+        "OV_VLM_MODEL": {
+          "defaultValue": "gpt-5.4",
+          "description": "LLM model id (upstream's OpenAI preset). A smaller model lowers ingestion cost.",
+          "required": false
+        },
+        "OV_VLM_API_KEY": {
+          "defaultValue": "${{OPENAI_API_KEY}}",
+          "description": "LLM key. Defaults to OPENAI_API_KEY; override to use a different provider.",
+          "required": false
+        },
+        "OV_VLM_API_BASE": {
+          "defaultValue": "${{OPENAI_API_BASE}}",
+          "description": "LLM base URL. Defaults to OPENAI_API_BASE.",
+          "required": false
+        },
+        "OV_EMBEDDING_PROVIDER": {
+          "defaultValue": "openai",
+          "description": "Embedding provider: openai, azure, volcengine, jina, voyage, gemini, dashscope, cohere, ...",
+          "required": false
+        },
+        "OV_EMBEDDING_MODEL": {
+          "defaultValue": "text-embedding-3-small",
+          "description": "Embedding model id. Fix it before adding data: a new model needs a reindex.",
+          "required": false
+        },
+        "OV_EMBEDDING_DIMENSION": {
+          "defaultValue": "1536",
+          "description": "Vector size of the embedding model (1536 for text-embedding-3-small). Must match the model.",
+          "required": false
+        },
+        "OV_EMBEDDING_API_KEY": {
+          "defaultValue": "${{OPENAI_API_KEY}}",
+          "description": "Embedding key. Defaults to OPENAI_API_KEY.",
+          "required": false
+        },
+        "OV_EMBEDDING_API_BASE": {
+          "defaultValue": "${{OPENAI_API_BASE}}",
+          "description": "Embedding base URL. Defaults to OPENAI_API_BASE.",
+          "required": false
+        },
+        "OV_OAUTH_ENABLED": {
+          "defaultValue": "true",
+          "description": "OAuth 2.1 for MCP clients such as Claude.ai and ChatGPT; consent still needs a user API key.",
+          "required": false
+        },
+        "OV_LOG_LEVEL": {
+          "defaultValue": "INFO",
+          "description": "Server log level: DEBUG, INFO, WARNING, ERROR.",
+          "required": false
+        },
+        "OPENVIKING_PUBLIC_BASE_URL": {
+          "defaultValue": "https://${{RAILWAY_PUBLIC_DOMAIN}}",
+          "description": "Public HTTPS URL used for OAuth metadata and MCP upload/download links.",
+          "required": false
+        },
+        "OPENVIKING_WITH_BOT": {
+          "defaultValue": "1",
+          "description": "1 runs the built-in VikingBot (Studio chat) next to the API, shell exec off; 0 runs the API only.",
+          "required": false
+        },
+        "OPENVIKING_CONF_MODE": {
+          "defaultValue": "seed",
+          "description": "seed writes ov.conf only on a new volume; overwrite rewrites it from OPENVIKING_CONF_CONTENT each start.",
+          "required": false
+        },
+        "OPENVIKING_CONF_CONTENT": {
+          "defaultValue": "{\n  \"storage\": {\n    \"workspace\": \"/app/.openviking/data\",\n    \"agfs\": {\n      \"backend\": \"local\",\n      \"timeout\": 10\n    },\n    \"vectordb\": {\n      \"name\": \"context\",\n      \"backend\": \"local\",\n      \"project\": \"default\"\n    }\n  },\n  \"log\": {\n    \"level\": \"${OV_LOG_LEVEL}\",\n    \"output\": \"stdout\"\n  },\n  \"server\": {\n    \"host\": \"0.0.0.0\",\n    \"port\": 1933,\n    \"workers\": 1,\n    \"auth_mode\": \"api_key\",\n    \"root_api_key\": \"${OPENVIKING_ROOT_API_KEY}\",\n    \"cors_origins\": [\n      \"*\"\n    ]\n  },\n  \"oauth\": {\n    \"enabled\": \"${OV_OAUTH_ENABLED}\"\n  },\n  \"embedding\": {\n    \"dense\": {\n      \"provider\": \"${OV_EMBEDDING_PROVIDER}\",\n      \"api_base\": \"${OV_EMBEDDING_API_BASE}\",\n      \"api_key\": \"${OV_EMBEDDING_API_KEY}\",\n      \"model\": \"${OV_EMBEDDING_MODEL}\",\n      \"dimension\": \"${OV_EMBEDDING_DIMENSION}\"\n    }\n  },\n  \"vlm\": {\n    \"provider\": \"${OV_VLM_PROVIDER}\",\n    \"api_base\": \"${OV_VLM_API_BASE}\",\n    \"api_key\": \"${OV_VLM_API_KEY}\",\n    \"model\": \"${OV_VLM_MODEL}\"\n  },\n  \"bot\": {\n    \"sandbox\": {\n      \"backend\": \"direct\",\n      \"backends\": {\n        \"direct\": {\n          \"allow_exec\": false\n        }\n      }\n    }\n  }\n}",
+          "description": "Seed ov.conf. ${VAR} placeholders are filled from this service's variables at every start.",
+          "required": false
+        },
+        "RAILWAY_DEPLOYMENT_DRAINING_SECONDS": {
+          "defaultValue": "30",
+          "description": "Time to finish requests and close the embedded vector store before a redeploy stops it.",
+          "required": false
+        }
+      }
+    }
+  },
+  "buckets": []
+}
