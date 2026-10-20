@@ -1,5 +1,7 @@
 # Deploy and Host OpenViking with Railway
 
+[![Deploy on Railway](https://railway.com/button.svg)](https://railway.com/deploy/openviking-v05-context-database-for-ai-a?referralCode=20H68q)
+
 OpenViking, an open-source project from Volcengine (AGPL-3.0), is a context database for AI agents. It keeps an agent's memory, its knowledge base and its skills in one workspace and serves them through a REST API, an MCP endpoint and the Studio web console. This template runs OpenViking v0.5.1 with persistent storage and authentication on.
 
 ## About Hosting OpenViking
