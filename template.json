@@ -1,5 +1,6 @@
 {
-  "name": "OpenViking v0.5 Context Database for AI Agents",
+  "name": "OpenViking Context Database for AI Agents",
+  "idSeed": "OpenViking v0.5 Context Database for AI Agents",
   "description": "One self-hosted store for agent memory, knowledge and skills, with an API.",
   "category": "AI/ML",
   "tags": [

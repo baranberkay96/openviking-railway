@@ -1,10 +1,10 @@
-# OpenViking v0.5 Context Database for AI Agents: Railway template spec
+# OpenViking Context Database for AI Agents: Railway template spec
 
 ## Listing
 
 | Field | Value |
 |---|---|
-| Name | **OpenViking v0.5 Context Database for AI Agents** (`v0.5` = major.minor of the pinned release v0.5.1) |
+| Name | **OpenViking Context Database for AI Agents** (`v0.5` = major.minor of the pinned release v0.5.1) |
 | Description | One self-hosted store for agent memory, knowledge and skills, with an API. (74 chars) |
 | Category | AI/ML |
 | Tags | openviking, context-database, memory, rag, ai-agents, mcp, skills, vector-search |
